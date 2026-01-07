@@ -125,46 +125,68 @@ WindowsEvents
 
 ## 🔍 Key Findings
 
-After 24 hours of exposure:
-- **[X]** failed RDP login attempts detected
-- Attacks originated from **[X]** countries
-- Top attack sources: [Country 1], [Country 2], [Country 3]
-- Most common usernames attempted: `administrator`, `admin`, `user`, `test`
+**After 24 hours of exposure:**
+- **67,784 total security events** detected
+- **45,000+ attacks from Poland** alone
+- **22,600+ attacks from Argentina**
+- Attacks from **8+ countries:** Poland, Argentina, UK, Portugal, Spain, Indonesia, Latvia, Finland
+- Most common usernames attempted: `ADMINISTRATOR`, `SERVER`, `ADMIN`, `USER`
+
+## 📊 KQL Queries Used
+
+### Query Failed Login Attempts:
+```kql
+SecurityEvent
+| where EventID == 4625
+| project TimeGenerated, Computer, Account, IpAddress
+```
+
+### Enrich with Geolocation:
+```kql
+let GeoIPDB_FULL = _GetWatchlist("geoip");
+SecurityEvent
+| where EventID == 4625
+| where TimeGenerated > ago(7d)
+| evaluate ipv4_lookup(GeoIPDB_FULL, IpAddress, network)
+| project TimeGenerated, Computer, Account, IpAddress, country, city, latitude, longitude
+| order by TimeGenerated desc
+| take 50
+```
 
 ## 🎓 Skills Demonstrated
 
-| Skill | Implementation |
-|-------|---------------|
-| Cloud Security | Azure VM deployment, NSG configuration |
-| SIEM Management | Sentinel setup, log ingestion, alerting |
-| Threat Hunting | KQL queries, event analysis |
-| Log Analytics | LAW configuration, data collection rules |
-| Threat Intelligence | GeoIP enrichment, watchlist management |
-| Data Visualization | Custom workbooks, attack maps |
-| Security Monitoring | Real-time event tracking, incident detection |
+- Cloud Security (Microsoft Azure)
+- SIEM Configuration (Microsoft Sentinel)
+- Threat Hunting & Log Analysis (KQL)
+- Threat Intelligence (GeoIP enrichment)
+- Data Visualization (Attack maps)
+- Security Event Analysis
+- Honeypot Deployment
 
-## 📚 Documentation
+## 📚 Lab Steps
 
-- [Detailed Setup Guide](docs/SETUP.md)
-- [KQL Query Reference](docs/KQL-QUERIES.md)
-- [Troubleshooting Guide](docs/TROUBLESHOOTING.md)
-- [Attack Analysis Report](docs/ATTACK-ANALYSIS.md)
+1. Created Azure subscription and deployed Windows 10 VM
+2. Configured NSG to allow all inbound traffic (honeypot setup)
+3. Created Log Analytics Workspace and Microsoft Sentinel instance
+4. Configured Windows Security Events data connector
+5. Imported GeoIP watchlist (54K IP ranges)
+6. Created custom attack map workbook
+7. Performed KQL queries for threat hunting
 
 ## 🔐 Security Considerations
 
-**⚠️ WARNING:** This lab intentionally creates an insecure environment for educational purposes.
-
-- Honeypot VM was completely exposed (all ports open, firewall disabled)
-- Never replicate this configuration in production
+**⚠️ WARNING:** This lab intentionally created an insecure environment for educational purposes.
+- VM was completely exposed (all ports open, firewall disabled)
+- Never replicate this in production
 - VM was destroyed after lab completion
-- No sensitive data was stored on the honeypot
 
 ## 💡 Key Takeaways
 
-1. **Real-world threat landscape:** Within hours of deployment, the VM received hundreds of automated attacks
-2. **Importance of logging:** Centralized log management is critical for detecting and responding to threats
-3. **Power of SIEM:** Sentinel enables correlation, enrichment, and visualization of security events at scale
-4. **Cloud security skills:** Hands-on experience with Azure, Sentinel, and enterprise security tools
+- Real-world attacks happen within **minutes** of exposure
+- Automated bot attacks are constant and global
+- SIEM tools are critical for detecting threats at scale
+- Log enrichment (geolocation) enables better threat intelligence
+- KQL is a powerful query language for security analytics
 
 ## 🚀 Future Enhancements
 
